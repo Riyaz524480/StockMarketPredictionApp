@@ -132,22 +132,65 @@ if run:
     # ----------------------------
     # Forecast Plot (Clean)
     # ----------------------------
+    # ----------------------------
+    # Forecast Plot (Fixed)
+    # ----------------------------
     st.subheader("📊 Forecast Plot")
 
-    fig1 = plot_plotly(model, forecast)
+    fig1 = go.Figure()
 
-    # Remove all "All" range selector buttons
-    fig1.for_each_xaxis(
-        lambda x: x.update(rangeselector=dict(visible=False))
-    )
+    # Historical closing prices
+    fig1.add_trace(go.Scatter(
+        x=df_train['ds'],
+        y=df_train['y'],
+        mode='lines',
+        name='Actual Close Price',
+        line=dict(color='#1f77b4', width=2)
+    ))
+
+    # Lower estimate
+    fig1.add_trace(go.Scatter(
+        x=forecast['ds'],
+        y=forecast['yhat_lower'],
+        mode='lines',
+        line=dict(width=0),
+        showlegend=False,
+        hoverinfo='skip'
+    ))
+
+    # Upper estimate and shaded uncertainty range
+    fig1.add_trace(go.Scatter(
+        x=forecast['ds'],
+        y=forecast['yhat_upper'],
+        mode='lines',
+        name='Uncertainty Range',
+        line=dict(width=0),
+        fill='tonexty',
+        fillcolor='rgba(128,128,128,0.20)',
+        hoverinfo='skip'
+    ))
+
+    # Predicted prices
+    fig1.add_trace(go.Scatter(
+        x=forecast['ds'],
+        y=forecast['yhat'],
+        mode='lines',
+        name='Predicted Price',
+        line=dict(color='#ff7f0e', width=2)
+    ))
 
     fig1.update_layout(
-        xaxis_title="Date",
-        yaxis_title="Price",
-        xaxis_rangeslider_visible=False
+        title=f'{selected_stock} - Historical Prices and Forecast',
+        xaxis_title='Date',
+        yaxis_title='Price',
+        xaxis_rangeslider_visible=False,
+        hovermode='x unified',
+        template='plotly_dark',
+        legend=dict(orientation='h', y=1.08, x=0)
     )
 
     st.plotly_chart(fig1, use_container_width=True)
+
     # ----------------------------
     # 📈 Next Trading Day Prediction & Signal (FIXED)
     # ----------------------------
